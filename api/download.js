@@ -1,42 +1,40 @@
-const instagramGetUrl = require("instagram-url-direct");
+const axios = require('axios');
 
 export default async function handler(req, res) {
-    // Header agar bisa diakses dari Blogger (CORS)
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
     const { url } = req.query;
 
-    if (!url) {
-        return res.status(400).json({ error: "URL Instagram tidak boleh kosong" });
-    }
+    if (!url) return res.status(400).json({ error: "URL is required" });
 
     try {
-        // Menggunakan library khusus untuk fetch media
-        const result = await instagramGetUrl(url);
+        // Membersihkan URL agar standar
+        const cleanUrl = url.split('?')[0].replace(/\/$/, "");
         
-        /* Hasil dari library ini biasanya berbentuk:
-           {
-             results_number: 1,
-             url_list: ["https://link-video.mp4..."]
-           }
-        */
-
-        if (result && result.url_list && result.url_list.length > 0) {
-            res.status(200).json({
-                status: "success",
-                url: result.url_list[0] // Mengambil link pertama
-            });
-        } else {
-            res.status(404).json({ 
-                error: "Media tidak ditemukan atau akun di-private" 
-            });
-        }
-    } catch (error) {
-        console.error("Error API:", error);
-        res.status(500).json({ 
-            error: "Gagal memproses link. Instagram mungkin sedang membatasi akses." 
+        const response = await axios.get(`${cleanUrl}/?__a=1&container_main=1`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                'Cookie': 'sessionid=17864863018060157;' 
+            }
         });
+
+        // Instagram mengembalikan data dalam format JSON jika memakai __a=1
+        const data = response.data;
+        const mediaData = data.graphql?.shortcode_media || data.items?.[0];
+
+        if (!mediaData) {
+            return res.status(404).json({ error: "Media tidak ditemukan. Pastikan akun tidak diprivat." });
+        }
+
+        // Ambil link video jika ada, jika tidak ambil link foto
+        const downloadUrl = mediaData.video_url || mediaData.display_url;
+
+        res.status(200).json({
+            status: "success",
+            url: downloadUrl
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Instagram tetap memblokir. Gunakan Session ID baru atau akun lain." });
     }
 }
