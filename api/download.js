@@ -1,19 +1,24 @@
 const axios = require('axios');
-const qs = require('qs'); // Digunakan untuk format x-www-form-urlencoded
+const qs = require('qs');
 
 export default async function handler(req, res) {
-    // Header agar bisa diakses dari Blogger (CORS)
+    // Pengaturan agar Blogger bisa mengakses API ini
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Kita ambil username dari query (contoh: ?username=jokowi)
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Mengambil username dari parameter URL (?username=...)
     const { username } = req.query;
 
     if (!username) {
-        return res.status(400).json({ error: "Username Instagram diperlukan" });
+        return res.status(400).json({ error: "Username Instagram wajib diisi" });
     }
 
-    // Data yang akan dikirim ke RapidAPI (x-www-form-urlencoded)
+    // Format data sesuai permintaan RapidAPI (x-www-form-urlencoded)
     const data = qs.stringify({ 'username': username });
 
     const options = {
@@ -30,12 +35,12 @@ export default async function handler(req, res) {
     try {
         const response = await axios.request(options);
         
-        // Kirim hasil dari RapidAPI kembali ke Blogger
+        // Kirim hasil dari RapidAPI kembali ke Blogger kamu
         res.status(200).json(response.data);
     } catch (error) {
-        console.error(error);
+        console.error("API Error:", error.response ? error.response.data : error.message);
         res.status(500).json({ 
-            error: "Gagal mengambil stories. Pastikan username benar dan akun tidak privat." 
+            error: "Gagal mengambil data. Pastikan username benar dan akun tidak privat." 
         });
     }
 }
