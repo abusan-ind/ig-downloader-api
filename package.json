@@ -1,8 +1,7 @@
 {
-  "name": "ig-api-downloader",
+  "name": "ig-api",
   "version": "1.0.0",
-  "main": "api/download.js",
   "dependencies": {
-    "instagram-url-direct": "^1.0.12"
+    "axios": "^1.4.0"
   }
 }
