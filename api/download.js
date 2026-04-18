@@ -11,8 +11,7 @@ export default async function handler(req, res) {
         url: 'https://instagram-loarder.p.rapidapi.com/download', // Sesuaikan dengan API yang kamu pilih
         params: { url: url },
         headers: {
-            'X-RapidAPI-Key': 'd1c4fe54aamshc362b772236c69cp1330a9jsn6e9c4cfedda1
-',
+            'X-RapidAPI-Key': 'd1c4fe54aamshc362b772236c69cp1330a9jsn6e9c4cfedda1',
             'X-RapidAPI-Host': 'instagram-downloader-v2.p.rapidapi.com'
         }
     };
