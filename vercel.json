@@ -1,7 +1,9 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/download.js" }
+  "routes": [
+    {
+      "src": "/api/download",
+      "dest": "/api/download.js"
+    }
   ]
 }
-
